@@ -445,9 +445,19 @@ void printInt(string id)
 	code.push_back("syscall");
 }
 
+void inputFloat(string id)
+{
+	code.push_back("li $v0, 6");
+	code.push_back("syscall");
+	struct symbolStruktura tempSymbol = wypelnijStruktureSymbol(FV, id);
+	code.push_back("lw $t0," + toString(id));
+	code.push_back("la $a0, ($t0)");
+	code.push_back("syscall");
+}
+
 void printFloat(string id)
 {
-	//code.push.back("li $v0, 2"); // 2 bo to systemowe print float
+	//code.push_back("li $v0, 2"); // 2 bo to systemowe print float
 	//struct symbolStruktura tempSymbol = wypelnijStruktureSymbol(FV, id);
 	
 }
