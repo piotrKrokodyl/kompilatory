@@ -313,7 +313,7 @@ void conditionalEnd(int tempElse)
 	if(tempElse==1)
 	{
 		static int counterElse=0;
-		string labelElse = "etykietaElse" + toString(counterElse);
+		string labelElse = "etykietaElse" + toString(counterElse++);
 		labelsElse.push(labelElse);		
 		//string labelElse = labels.top(); //nie zdejmuje - zdejmujemy za blokiem
 		code.push_back("j "+labelElse);
