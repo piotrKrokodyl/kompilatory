@@ -36,9 +36,15 @@ void inputInt(string id);
 void printInt(string id);
 void idlvalueFun(string id);
 
-stack <string> labels;
-stack <string> labelsElse;
+	
+// Do tablic
+void decArrInt(string name, int wart); // deklaracja tablicy intów 
 
+// Do while
+void whileBuild();
+void whileEnd();
+	
+	
 struct elementStruktura
 {
 	int typ;
@@ -52,6 +58,10 @@ struct symbolStruktura
 };
 
 stack <elementStruktura> stos;
+	
+stack <string> labels;
+stack <string> labelsElse;
+	
 elementStruktura wypelnijStruktureElement(int, string);
 
 symbolStruktura wypelnijStruktureSymbol(int, string);
@@ -60,23 +70,32 @@ symbolStruktura wypelnijStruktureSymbol(int, string);
 map<string, symbolStruktura> symbole;
 
 template<typename T> 
+
 string toString(T value)
 {
 	stringstream sstream;
 	sstream << value;
 	return sstream.str();
 }
+	
+static int counter; // do pętli while
+	
 %}
 %union 
 {float fval;
 char *text;
 int	ival;};
-%token <fval> FV
-%token <text> ID
-%token <ival> IV
+
+
+
+%token <text> ID  // u Tomasza ID
+%token <ival> IV  // i Tomasza LC
+%token <fval> FV  
+	
+	
 %token DO WHILE
 %token FOR
-%token NEQ EQ GEQ LEQ
+%token LEQ GEQ EQ NEQ
 %token INT REAL
 %token CHAR STRING
 %token IF THEN ELSE
@@ -92,22 +111,31 @@ statement
 	|blok
 	|wp
 	|if_stat
-	|tab
+	|while_st
+	|tab	    // deklaracja tablicy - i int i float w jednym
 	;
 	
 tab
     :INT ID'['IV']' {
                 printf("deklaracja tablicy INT\n");
-                //createIntTable($4);
-    }
+				// decArrInt($2, $4);
+				}
     |REAL ID'['FV']' {
                 printf("deklaracja tablicy FLOAT\n");
+		 		// decArrFloat( .... );
     }
     ;
 
 blok
     :'{' statements '}'
     ;
+
+while_st
+	:WHILE '('condit_exp')' {
+		whileBuild();
+	} blok { 
+		whileEnd(); 
+	}
 
 wyr-lin
     :GETI '(' ID ')'  {
@@ -126,17 +154,6 @@ wyr-lin
             }
     |PUTI '(' ID ')'  {
                 printf("PUTI\n");
-                /*
-                code.push_back("li $v0,1");
-                
-                symbolStruktura tempSymbol = wypelnijStruktureSymbol(IV, $3);
-                symbole[$3] = tempSymbol;
-                
-                code.push_back("lw $a0," + toString($3));
-                code.push_back("syscall");
-                
-                //code.push_back("sw $v0," + toString($3));
-                */
                 inputInt($3);
             }
     |PUTF   {
@@ -428,6 +445,12 @@ void printInt(string id)
 	code.push_back("syscall");
 }
 
+void printFloat(string id)
+{
+	//code.push.back("li $v0, 2"); // 2 bo to systemowe print float
+	//struct symbolStruktura tempSymbol = wypelnijStruktureSymbol(FV, id);
+	
+}
 
 void idlvalueFun(string id)
 {
@@ -438,6 +461,52 @@ void idlvalueFun(string id)
 	symbolStruktura tempSymbol = wypelnijStruktureSymbol(ID, toString(id));
 	symbole[id] = tempSymbol;
 }
+
+void decArrInt(string name, int wart)
+{
+	//elem temp = fillStructElem(ID, name);
+	//stos.push(temp);
+	printf("zadeklarowano tablice int rozmiar %d, name: %s\n", wart,name.c_str());
+	symbolStruktura tempSymbol = wypelnijStruktureSymbol(ID, name);
+	symbole[name]=tempSymbol;	
+}
+
+void whileBuild()
+{
+	elementStruktura element = stos.top();
+	stos.pop();
+	code.push_back("while:");
+
+	if(conditionalOp=="<")
+	{
+		//code.push_back("sub $t1, $t1, $t2"); 
+		//code.push_back("bltz $t1, exit");				
+		code.push_back("bge $t"+toString(counter)+", "+element.wartosc+", exit");
+	}else if(conditionalOp=="<=")
+	{
+		code.push_back("bgt $t"+toString(counter)+", "+element.wartosc+", exit");
+	}else if(conditionalOp==">")
+	{
+		code.push_back("ble $t"+toString(counter)+", "+element.wartosc+", exit");
+	}else if(conditionalOp==">=")
+	{
+		code.push_back("blt $t"+toString(counter)+", "+element.wartosc+", exit");
+	}else if(conditionalOp=="==")
+	{
+		code.push_back("beq $t"+toString(counter)+", "+element.wartosc+", exit");
+	}else{
+		code.push_back("bne $t"+toString(counter)+", "+element.wartosc+", exit");
+	}
+		
+}
+
+
+void whileEnd()
+{
+	code.push_back("j while");
+	code.push_back("exit:");
+}
+
 
 elementStruktura wypelnijStruktureElement(int typ, string wartosc)
 {
