@@ -1,0 +1,7 @@
+TODO:
+  do while 
+  tablice - obsługa
+  zmienne - deklaracja
+  floaty - obsługa
+
+
