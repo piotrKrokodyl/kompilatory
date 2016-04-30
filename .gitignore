@@ -1,0 +1,5 @@
+def.tab.cc
+def.tab.hh
+*.o
+leks
+lex.yy.c
